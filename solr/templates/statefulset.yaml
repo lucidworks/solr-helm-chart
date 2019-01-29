@@ -62,7 +62,7 @@ spec:
                 for i in {{ $vals := . -}}{{ range $i, $e := until ( int .Values.zookeeper.replicaCount ) -}}
                   "{{- template "solr.zookeeper-name" $vals }}-{{ $i }}.{{ template "solr.zookeeper-service-name" $vals }}" {{ end -}};
                   do mode=$(echo srvr | nc $i 2181 | grep "Mode");
-                    if [ "$mode" == "Mode: leader" ]; then
+                    if [ "$mode" == "Mode: leader" ] || [ "$mode" == "Mode: standalone" ]; then
                       exit 0;
                     fi;
                   done;
