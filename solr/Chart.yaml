@@ -9,6 +9,6 @@ keywords:
 home: "http://lucene.apache.org/solr/"
 sources:
   - "https://gitbox.apache.org/repos/asf?p=lucene-solr.git"
-maintainers: 
+maintainers:
   - name: "Ian Thebridge"
     email: "ian.thebridge@lucidworks.com"

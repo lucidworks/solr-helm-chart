@@ -20,8 +20,9 @@ spec:
   template:
     metadata:
       labels:
-{{ include "solr.common.labels" . | indent 8 }}
-        component: server
+        app: "{{ template "solr.name" . }}"
+        release: "{{ .Release.Name }}"
+        component: "server"
       annotations:
 {{ toYaml .Values.podAnnotations | indent 8 }}
     spec:
@@ -29,17 +30,16 @@ spec:
         fsGroup: 8983
       affinity:
 {{ tpl (toYaml .Values.affinity) .  | indent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       volumes:
 {{- if .Values.tls.enabled }}
         - name: keystore-volume
           emptyDir: {}
         - name: "tls-secret"
-          readOnly: true
           secret:
             secretName: {{ .Values.tls.certSecret.name }}
 {{- if not (eq .Values.tls.caSecret.name  "") }}
         - name: "tls-ca"
-          readOnly: true
           secret:
             secretName: {{ .Values.tls.caSecret.name }}
 {{- end }}
@@ -58,7 +58,7 @@ spec:
             - '-c'
             - |
               COUNTER=0;
-              while [  $COUNTER -lt 30 ]; do
+              while [  $COUNTER -lt 120 ]; do
                 for i in {{ $vals := . -}}{{ range $i, $e := until ( int .Values.zookeeper.replicaCount ) -}}
                   "{{- template "solr.zookeeper-name" $vals }}-{{ $i }}.{{ template "solr.zookeeper-service-name" $vals }}" {{ end -}};
                   do mode=$(echo srvr | nc $i 2181 | grep "Mode");
@@ -69,7 +69,7 @@ spec:
                 let COUNTER=COUNTER+1;
                 sleep 2;
               done;
-              echo "Did NOT see a ZK leader after 60 secs!";
+              echo "Did NOT see a ZK leader after 240 secs!";
               exit 1;
         - name: "cp-solr-xml"
           image: busybox:latest
@@ -115,12 +115,14 @@ spec:
               mountPath: "/tmp/keystore"
             - name: "tls-secret"
               mountPath: "/tmp/tls_secret"
+              readOnly: true
+
 {{ if not (eq .Values.tls.caSecret.name "") }}
             - name: "tls-ca"
-              mountPath; "/tmp/tls_ca"
+              mountPath: "/tmp/tls_ca"
+              readOnly: true
 {{ end }}
 {{ end }}
-
       containers:
         - name: solr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -145,6 +147,8 @@ spec:
               value: "$(POD_HOSTNAME).{{ template "solr.headless-service-name" . }}"
             - name: "ZK_HOST"
               value: "{{ template "solr.zookeeper-name" . }}:2181"
+            - name: "SOLR_LOG_LEVEL"
+              value: "{{ .Values.logLevel }}"
 {{ if .Values.tls.enabled }}
             - name: "SOLR_SSL_ENABLED"
               value: "true"
@@ -162,8 +166,6 @@ spec:
               value: "{{ .Values.tls.needClientAuth }}"
             - name: "SOLR_SSL_CHECK_PEER_NAME"
               value: "{{ .Values.tls.checkPeerName }}"
-            - name: "SOLR_LOG_LEVEL"
-              value: "INFO"
 {{ end }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -194,6 +196,9 @@ spec:
       spec:
         accessModes:
 {{ toYaml .Values.volumeClaimTemplates.accessModes | indent 10 }}
+{{- if not ( eq .Values.volumeClaimTemplates.storageClassName  "" ) }}
+        storageClassName: "{{ .Values.volumeClaimTemplates.storageClassName }}"
+{{- end }}
         resources:
           requests:
             storage: {{ .Values.volumeClaimTemplates.storageSize }}

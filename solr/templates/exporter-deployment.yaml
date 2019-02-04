@@ -1,6 +1,28 @@
 {{- if .Values.exporter.enabled }}
 ---
 
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "{{ include "solr.exporter-name" . }}"
+  labels:
+{{ include "solr.common.labels" . | indent 4 }}
+    component: "exporter"
+  annotations:
+{{ toYaml .Values.exporter.service.annotations | indent 4}}
+spec:
+  type: "{{ .Values.exporter.service.type }}"
+  ports:
+  - port: {{ .Values.exporter.port }}
+    name: "solr-client"
+  selector:
+    app: "{{ template "solr.name" . }}"
+    release: "{{ .Release.Name }}"
+    component: "exporter"
+
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +37,7 @@ spec:
       release: "{{ .Release.Name }}"
       component: "exporter"
   replicas: 1
-  updateStrategy:
+  strategy:
     {{ toYaml .Values.exporter.updateStrategy | indent 4}}
   template:
     metadata:
