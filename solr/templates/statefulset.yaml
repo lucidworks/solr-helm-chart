@@ -139,12 +139,6 @@ spec:
               value: "/opt/solr/server/home"
             - name: "SOLR_PORT"
               value: "{{ .Values.port }}"
-            - name: "POD_HOSTNAME"
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: "SOLR_HOST"
-              value: "$(POD_HOSTNAME).{{ template "solr.headless-service-name" . }}"
             - name: "ZK_HOST"
               value: "{{ template "solr.zookeeper-name" . }}:2181"
             - name: "SOLR_LOG_LEVEL"
