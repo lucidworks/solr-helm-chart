@@ -22,6 +22,12 @@ image:
   tag: 7.6.0
   pullPolicy: Always
 
+# Solr Command
+command: ["docker-entrypoint.sh"]
+
+# Solr Args
+args: ["solr-foreground"]
+
 # Solr pod liveness
 livenessProbe:
   initialDelaySeconds: 20

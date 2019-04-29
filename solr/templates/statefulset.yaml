@@ -126,6 +126,10 @@ spec:
       containers:
         - name: solr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command:
+{{ toYaml .Values.command | indent 12 }}
+          args:
+{{ toYaml .Values.args | indent 12 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
