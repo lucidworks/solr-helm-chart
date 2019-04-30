@@ -75,8 +75,10 @@ volumeClaimTemplates:
   accessModes:
     - "ReadWriteOnce"
 
-# Environment Varialbles
-solrOpts: "$SOLR_OPTS"
+# Environment Variables
+solrOpts: ""
+dataDogAgentHost:
+  enabled: false
 
 # Configuration for solr TLS handling, see README.md for more instructions
 tls:

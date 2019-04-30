@@ -187,6 +187,12 @@ spec:
             - name: "SOLR_SSL_CHECK_PEER_NAME"
               value: "{{ .Values.tls.checkPeerName }}"
 {{ end }}
+{{ if .Values.dataDogAgentHost }}
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+{{ end }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
