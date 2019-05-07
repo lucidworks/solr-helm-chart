@@ -1,4 +1,23 @@
 ---
+# Where are we running solr? Local or part of a Fusion CLuster running on either GKE or EKS. Options are local, gke, eks
+solr_mode: "local"
+
+solr_complex_start_command: [/bin/bash]
+solr_start_gke: ["-c", "export SOLR_ZONE=$(curl -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/zone | cut -d/ -f4) && \
+                export SOLR_OPTS=\"$SOLR_OPTS -Dsolr_zone=$SOLR_ZONE\" && \
+                docker-entrypoint.sh solr-foreground"]
+
+solr_start_eks: ["-c", "export SOLR_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's/.$//g') && \
+                export SOLR_OPTS=\"$SOLR_OPTS -Dsolr_zone=$SOLR_ZONE\" && \
+                docker-entrypoint.sh solr-foreground"]
+
+# Solr Default Command for local operation
+command: ["docker-entrypoint.sh"]
+
+# Solr Default Args for local operation
+args: ["solr-foreground"]
+
+
 
 # Which port should solr listen on
 port: 8983
@@ -55,6 +74,11 @@ volumeClaimTemplates:
   storageSize: "20Gi"
   accessModes:
     - "ReadWriteOnce"
+
+# Environment Variables
+solrOpts: ""
+dataDogAgentHost:
+  enabled: false
 
 # Configuration for solr TLS handling, see README.md for more instructions
 tls:

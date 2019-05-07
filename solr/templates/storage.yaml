@@ -1,0 +1,30 @@
+{{ if (eq .Values.solr_mode "local") }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: solr-local-storage
+provisioner: kubernetes.io/no-provisioner
+{{ end }}
+{{ if (eq .Values.solr_mode "gke") }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: solr-gke-storage-regional
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  replication-type: regional-pd
+  zones: us-west1-b, us-west1-c
+{{ end }}
+{{ if (eq .Values.solr_mode "eks") }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: gp2
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4 
+{{ end }}

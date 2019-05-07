@@ -126,6 +126,24 @@ spec:
       containers:
         - name: solr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+{{ if (eq .Values.solr_mode "local") }}
+          command:
+{{ toYaml .Values.command | indent 12 }}
+          args:
+{{ toYaml .Values.args | indent 12 }}
+{{ end }}
+{{ if (eq .Values.solr_mode "gke") }}
+          command:
+{{ toYaml .Values.solr_complex_start_command | indent 12 }}
+          args:
+{{ toYaml .Values.solr_start_gke | indent 12 }}
+{{ end }}
+{{ if (eq .Values.solr_mode "eks") }}
+          command:
+{{ toYaml .Values.solr_complex_start_command | indent 12 }}
+          args:
+{{ toYaml .Values.solr_start_eks | indent 12 }}
+{{ end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -133,6 +151,8 @@ spec:
           - containerPort: {{ .Values.port }}
             name: solr-client
           env:
+            - name: "SOLR_OPTS"
+              value: "{{ .Values.solrOpts }}"
             - name: "SOLR_JAVA_MEM"
               value: "{{ .Values.javaMem }}"
             - name: "SOLR_HOME"
@@ -166,6 +186,12 @@ spec:
               value: "{{ .Values.tls.needClientAuth }}"
             - name: "SOLR_SSL_CHECK_PEER_NAME"
               value: "{{ .Values.tls.checkPeerName }}"
+{{ end }}
+{{ if .Values.dataDogAgentHost }}
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
 {{ end }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
