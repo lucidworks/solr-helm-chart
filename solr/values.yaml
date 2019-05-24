@@ -6,6 +6,9 @@ port: 8983
 # Number of solr instances to run
 replicaCount: 3
 
+# Pod Management Policy for solr
+podManagementPolicy: "OrderedReady"
+
 # Settings for solr java memory
 javaMem: "-Xms2g -Xmx3g"
 
@@ -26,11 +29,13 @@ image:
 livenessProbe:
   initialDelaySeconds: 20
   periodSeconds: 10
+  failureThreshold: 3
 
 # Solr pod readiness
 readinessProbe:
   initialDelaySeconds: 15
   periodSeconds: 5
+  failureThreshold: 3
 
 # Annotations to apply to the solr pods
 podAnnotations: {}
