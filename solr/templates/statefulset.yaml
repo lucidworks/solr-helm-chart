@@ -14,6 +14,7 @@ spec:
       release: "{{ .Release.Name }}"
       component: "server"
   serviceName: {{ template "solr.headless-service-name" . }}
+  podManagementPolicy: "{{ .Values.podManagementPolicy }}"
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
     {{ toYaml .Values.updateStrategy | indent 4}}
@@ -170,6 +171,8 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             httpGet:
               scheme: "{{ .Values.tls.enabled | ternary "HTTPS" "HTTP" }}"
               path: /solr/admin/info/system
@@ -177,6 +180,8 @@ spec:
           readinessProbe:
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             httpGet:
               scheme: "{{ .Values.tls.enabled | ternary "HTTPS" "HTTP" }}"
               path: /solr/admin/info/system
